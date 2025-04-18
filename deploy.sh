@@ -25,27 +25,27 @@ show_help() {
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        -n|--stack-name)
+        -n | --stack-name)
             STACK_NAME="$2"
             shift 2
             ;;
-        -r|--region)
+        -r | --region)
             REGION="$2"
             shift 2
             ;;
-        -u|--url)
+        -u | --url)
             SERVER_URL="$2"
             shift 2
             ;;
-        -p|--port)
+        -p | --port)
             SERVER_PORT="$2"
             shift 2
             ;;
-        -s|--secret)
+        -s | --secret)
             SECRET_NAME="$2"
             shift 2
             ;;
-        -l|--log-level)
+        -l | --log-level)
             LOGGER_LEVEL="$2"
             shift 2
             ;;
@@ -61,7 +61,7 @@ while [[ $# -gt 0 ]]; do
             ROOT_CERTIFICATE="$2"
             shift 2
             ;;
-        -h|--help)
+        -h | --help)
             show_help
             exit 0
             ;;
@@ -85,35 +85,44 @@ SERVER_PORT=${SERVER_PORT:-443}
 SECRET_NAME=${SECRET_NAME:-ServerSSLConfig}
 LOGGER_LEVEL=${LOGGER_LEVEL:-INFO}
 
+# Check if AWS CLI is installed
+if ! command -v aws &>/dev/null; then
+    echo "ERROR: AWS CLI is not installed. Please install it and configure your credentials."
+    exit 1
+fi
+
+# Check if AWS CLI is configured
+if ! aws sts get-caller-identity &>/dev/null; then
+    echo "ERROR: AWS CLI is not configured. Please run 'aws configure' to set up your credentials."
+    exit 1
+fi
+
 # Prepare parameter overrides
 PARAMS="ServerURL=$SERVER_URL ServerPort=$SERVER_PORT SecretName=$SECRET_NAME LoggerLevel=$LOGGER_LEVEL"
 
 # Add certificate parameters if provided
-if [ ! -z "$SERVER_CERTIFICATE" ]; then
+if [ -n "$SERVER_CERTIFICATE" ]; then
     PARAMS="$PARAMS ServerCertificate=$SERVER_CERTIFICATE"
 fi
 
-if [ ! -z "$INTERMEDIATE_CERTIFICATE" ]; then
+if [ -n "$INTERMEDIATE_CERTIFICATE" ]; then
     PARAMS="$PARAMS IntermediateCertificate=$INTERMEDIATE_CERTIFICATE"
 fi
 
-if [ ! -z "$ROOT_CERTIFICATE" ]; then
+if [ -n "$ROOT_CERTIFICATE" ]; then
     PARAMS="$PARAMS RootCertificate=$ROOT_CERTIFICATE"
 fi
 
 # Deploy the CloudFormation stack
 echo "Deploying stack: $STACK_NAME to region: $REGION"
-aws cloudformation deploy \
+if aws cloudformation deploy \
     --template-file template.yaml \
     --stack-name "$STACK_NAME" \
     --region "$REGION" \
     --capabilities CAPABILITY_IAM \
-    --parameter-overrides $PARAMS
-
-# Check if deployment was successful
-if [ $? -eq 0 ]; then
+    --parameter-overrides "$PARAMS"; then
     echo "Deployment successful!"
-    
+
     # Provide different message based on whether certificates were provided
     if [ -z "$SERVER_CERTIFICATE" ] && [ -z "$INTERMEDIATE_CERTIFICATE" ] && [ -z "$ROOT_CERTIFICATE" ]; then
         echo "You need to update the certificates in AWS Secrets Manager."
@@ -122,5 +131,5 @@ if [ $? -eq 0 ]; then
         echo "Certificates were provided during deployment. The SSL Pinning function is ready to use."
     fi
 else
-    echo "Deployment failed!"
+    echo "ERROR: Deployment failed! Check the AWS CloudFormation console for more details."
 fi
