@@ -1,4 +1,4 @@
-# AWS SSL Pinning Lambda Function
+# AWS Lambda SSL Pinning
 
 This project contains an AWS Lambda function that performs SSL pinning by verifying the server's certificate chain against stored certificates in AWS Secrets Manager. It is designed to enhance security by ensuring that the server's identity is authentic.
 
@@ -20,8 +20,8 @@ This project contains an AWS Lambda function that performs SSL pinning by verify
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/aws-ssl-pinning.git
-   cd aws-ssl-pinning
+   git clone https://github.com/your-repo/aws-lambda-ssl-pinning.git
+   cd aws-lambda-ssl-pinning
    ```
 
 2. Make the deployment script executable:

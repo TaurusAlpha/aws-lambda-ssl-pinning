@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # Set default values
-STACK_NAME="ssl-pinning-stack"
+STACK_NAME="aws-lambda-ssl-pinning-stack"
 REGION="us-east-1"
 
 # Display help information
 show_help() {
     echo "Usage: $0 [OPTIONS]"
-    echo "Deploy the SSL Pinning Lambda function stack"
+    echo "Deploy the AWS Lambda SSL Pinning function stack"
     echo ""
     echo "Options:"
-    echo "  -n, --stack-name NAME    Set CloudFormation stack name (default: ssl-pinning-stack)"
+    echo "  -n, --stack-name NAME    Set CloudFormation stack name (default: aws-lambda-ssl-pinning-stack)"
     echo "  -r, --region REGION      Set AWS region (default: us-east-1)"
     echo "  -u, --url URL            Set server URL for SSL pinning (required)"
     echo "  -p, --port PORT          Set server port (default: 443)"
